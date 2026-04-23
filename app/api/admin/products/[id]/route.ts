@@ -1,24 +1,21 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+// PUT
+export async function PUT(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id: idParam } = await context.params;
+  const id = parseInt(idParam, 10);
+
+  if (Number.isNaN(id)) {
+    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+  }
+
   try {
-    const id = parseInt(params.id, 10);
-    if (Number.isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
-
     const body = await req.json();
-    console.log("PUT /api/admin/products/:id body:", body);
-
     const { name, price, description, image, category_id } = body;
-
-    if (!name || price === undefined || price === null || !category_id) {
-      return NextResponse.json(
-        { error: "Faltan campos obligatorios: name, price o category_id" },
-        { status: 400 }
-      );
-    }
 
     const updated = await prisma.product.update({
       where: { id },
@@ -33,23 +30,35 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PUT /api/admin/products/[id] error:", error);
-    // Si prisma lanza un error por constraints, devolver mensaje claro
-    return NextResponse.json({ error: "Error actualizando producto" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error actualizando producto" },
+      { status: 500 }
+    );
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  try {
-    const id = parseInt(params.id, 10);
-    if (Number.isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
+// DELETE
+export async function DELETE(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id: idParam } = await context.params;
+  const id = parseInt(idParam, 10);
 
-    await prisma.product.delete({ where: { id } });
+  if (Number.isNaN(id)) {
+    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+  }
+
+  try {
+    await prisma.product.delete({
+      where: { id },
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("DELETE /api/admin/products/[id] error:", error);
-    return NextResponse.json({ error: "Error eliminando producto" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error eliminando producto" },
+      { status: 500 }
+    );
   }
 }

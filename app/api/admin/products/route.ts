@@ -1,37 +1,45 @@
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Obtener todos los productos
 export async function GET() {
-  const products = await prisma.product.findMany({
-    include: {
-      category: true,
-    },
-    orderBy: {
-      id: "desc",
-    },
-  });
-
-  return Response.json(products);
+  try {
+    const products = await prisma.product.findMany({
+      include: { category: true },
+    });
+    return NextResponse.json(products);
+  } catch (error) {
+    console.error("GET /api/admin/products error:", error);
+    return NextResponse.json({ error: "Error obteniendo productos" }, { status: 500 });
+  }
 }
 
-export async function POST(req: Request) {
+// Crear un nuevo producto
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await request.json();
+    const { name, price, description, image, category_id } = body;
+
+    if (!name || price === undefined || price === null || !category_id) {
+      return NextResponse.json(
+        { error: "Faltan campos obligatorios: name, price o category_id" },
+        { status: 400 }
+      );
+    }
 
     const product = await prisma.product.create({
       data: {
-        name: body.name,
-        price: Number(body.price),
-        description: body.description,
-        image: body.image,
-        category_id: Number(body.category_id),
+        name,
+        price: Number(price),
+        description: description ?? null,
+        image: image ?? null,
+        category_id: Number(category_id),
       },
     });
 
-    return Response.json(product);
+    return NextResponse.json(product);
   } catch (error) {
-    return Response.json(
-      { error: "Error creando producto" },
-      { status: 500 }
-    );
+    console.error("POST /api/admin/products error:", error);
+    return NextResponse.json({ error: "Error creando producto" }, { status: 500 });
   }
 }
