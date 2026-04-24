@@ -3,23 +3,20 @@
 import { UploadButton } from "@uploadthing/react";
 import type { OurFileRouter } from "@/app/api/uploadthing/core";
 
-export default function ImageUploader({
-  setImageUrl,
-}: {
+type Props = {
   setImageUrl: (url: string) => void;
-}) {
+};
+
+export default function ImageUploader({ setImageUrl }: Props) {
   return (
-    <UploadButton<
-      OurFileRouter,
-      "imageUploader"
-    >
+    <UploadButton<OurFileRouter, "imageUploader">
       endpoint="imageUploader"
-      onClientUploadComplete={(res) => {
+      onClientUploadComplete={(res: any) => {
         const url = res?.[0]?.url;
         if (url) setImageUrl(url);
       }}
-      onUploadError={(error: Error) => {
-        alert("Error subiendo imagen: " + error.message);
+      onUploadError={(error: any) => {
+        console.error("Upload error:", error);
       }}
     />
   );

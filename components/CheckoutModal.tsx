@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
+import ImageUploader from "@/components/ImageUploader";
 
 export default function CheckoutModal({ close }: any) {
   const { cart, total, clearCart } = useCart();
@@ -10,6 +11,7 @@ export default function CheckoutModal({ close }: any) {
     name: "",
     phone: "",
     address: "",
+    image: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export default function CheckoutModal({ close }: any) {
       return;
     }
 
-    const phoneRegex = /^[0-9]{8}$/; // ejemplo: 8 dígitos
+    const phoneRegex = /^[0-9]{8}$/;
     if (!phoneRegex.test(form.phone)) {
       setError("Número de teléfono inválido");
       return;
@@ -31,7 +33,6 @@ export default function CheckoutModal({ close }: any) {
     setLoading(true);
 
     try {
-      // Guardar pedido en la BD
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,8 +47,8 @@ export default function CheckoutModal({ close }: any) {
 
       const order = await response.json();
 
-      // Construir mensaje con formato detallado
-      const fecha = new Date().toLocaleDateString("es-NI"); // ejemplo: 22/04/2026
+      const fecha = new Date().toLocaleDateString("es-NI");
+
       const mensaje = encodeURIComponent(`
 🧾 NUEVO PEDIDO #${order.id}
 📅 Fecha: ${fecha}
@@ -63,11 +64,10 @@ ${order.items
   )
   .join("\n")}
 
-Sub Total : C$ ${order.total}
-Envío : pendiente
+💰 Sub Total: C$ ${order.total}
+📦 Envío: pendiente
       `);
 
-      // Redirigir al chat de tu número de WhatsApp
       window.location.href = `https://wa.me/50577632589?text=${mensaje}`;
 
       clearCart();
@@ -111,8 +111,17 @@ Envío : pendiente
             <textarea
               placeholder="Dirección de envío"
               value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, address: e.target.value })
+              }
               className="w-full border p-3 rounded-lg"
+            />
+
+            {/* 🔥 UPLOAD IMAGEN (OPCIONAL) */}
+            <ImageUploader
+              setImageUrl={(url) =>
+                setForm({ ...form, image: url })
+              }
             />
 
             {error && <p className="text-red-600 text-sm">{error}</p>}

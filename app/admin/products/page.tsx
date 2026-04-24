@@ -21,13 +21,22 @@ type Category = {
   name: string;
 };
 
+type FormState = {
+  name: string;
+  price: string;
+  description: string;
+  image: string;
+  category_id: string;
+};
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     name: "",
     price: "",
     description: "",
@@ -53,35 +62,42 @@ export default function AdminProductsPage() {
     loadCategories();
   }, []);
 
-  /* ➕ CREAR / ✏️ EDITAR */
+  /* 💾 SAVE */
   const saveProduct = async () => {
     if (!form.name || !form.price || !form.category_id) {
       alert("Completa los campos");
       return;
     }
 
-    const payload = {
-      ...form,
-      price: Number(form.price),
-      category_id: Number(form.category_id),
-    };
+    setLoading(true);
 
-    if (editingId) {
-      await fetch(`/api/admin/products/${editingId}`, {
-        method: "PUT",
+    try {
+      const payload = {
+        ...form,
+        price: Number(form.price),
+        category_id: Number(form.category_id),
+      };
+
+      const url = editingId
+        ? `/api/admin/products/${editingId}`
+        : "/api/admin/products";
+
+      const method = editingId ? "PUT" : "POST";
+
+      await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-    } else {
-      await fetch("/api/admin/products", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+
+      resetForm();
+      loadProducts();
+    } catch (error) {
+      console.error(error);
+      alert("Error guardando producto");
+    } finally {
+      setLoading(false);
     }
-
-    resetForm();
-    loadProducts();
   };
 
   /* 🗑️ DELETE */
@@ -98,8 +114,8 @@ export default function AdminProductsPage() {
     setForm({
       name: product.name,
       price: product.price.toString(),
-      description: product.description,
-      image: product.image,
+      description: product.description || "",
+      image: product.image || "",
       category_id: product.category_id.toString(),
     });
 
@@ -207,7 +223,7 @@ export default function AdminProductsPage() {
                   placeholder="Nombre"
                   value={form.name}
                   onChange={(e) =>
-                    setForm({ ...form, name: e.target.value })
+                    setForm((prev) => ({ ...prev, name: e.target.value }))
                   }
                 />
 
@@ -217,7 +233,7 @@ export default function AdminProductsPage() {
                   placeholder="Precio"
                   value={form.price}
                   onChange={(e) =>
-                    setForm({ ...form, price: e.target.value })
+                    setForm((prev) => ({ ...prev, price: e.target.value }))
                   }
                 />
 
@@ -226,14 +242,17 @@ export default function AdminProductsPage() {
                   placeholder="Descripción"
                   value={form.description}
                   onChange={(e) =>
-                    setForm({ ...form, description: e.target.value })
+                    setForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
                   }
                 />
 
                 {/* 🔥 UPLOADTHING */}
                 <ImageUploader
                   setImageUrl={(url) =>
-                    setForm({ ...form, image: url })
+                    setForm((prev) => ({ ...prev, image: url }))
                   }
                 />
 
@@ -248,7 +267,10 @@ export default function AdminProductsPage() {
                   className="border p-2 rounded w-full"
                   value={form.category_id}
                   onChange={(e) =>
-                    setForm({ ...form, category_id: e.target.value })
+                    setForm((prev) => ({
+                      ...prev,
+                      category_id: e.target.value,
+                    }))
                   }
                 >
                   <option value="">Seleccionar categoría</option>
@@ -271,9 +293,14 @@ export default function AdminProductsPage() {
 
                 <button
                   onClick={saveProduct}
+                  disabled={loading}
                   className="w-full bg-blue-900 text-white py-2 rounded"
                 >
-                  {editingId ? "Actualizar" : "Guardar"}
+                  {loading
+                    ? "Guardando..."
+                    : editingId
+                    ? "Actualizar"
+                    : "Guardar"}
                 </button>
               </div>
 
