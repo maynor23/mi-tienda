@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ImageUploader from "@/components/ImageUploader";
 
 type Product = {
   id: number;
@@ -34,7 +35,7 @@ export default function AdminProductsPage() {
     category_id: "",
   });
 
-  /* 📦 LOAD */
+  /* 📦 LOAD DATA */
   const loadProducts = async () => {
     const res = await fetch("/api/admin/products");
     const data = await res.json();
@@ -52,28 +53,7 @@ export default function AdminProductsPage() {
     loadCategories();
   }, []);
 
-  /* 📤 SUBIR IMAGEN */
-  const handleUpload = async (e: any) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-
-    setForm((prev) => ({
-      ...prev,
-      image: data.url,
-    }));
-  };
-
-  /* ➕ CREAR o ✏️ EDITAR */
+  /* ➕ CREAR / ✏️ EDITAR */
   const saveProduct = async () => {
     if (!form.name || !form.price || !form.category_id) {
       alert("Completa los campos");
@@ -82,19 +62,17 @@ export default function AdminProductsPage() {
 
     const payload = {
       ...form,
-      price: parseFloat(form.price),
-      category_id: parseInt(form.category_id),
+      price: Number(form.price),
+      category_id: Number(form.category_id),
     };
 
     if (editingId) {
-      // ✏️ EDITAR
       await fetch(`/api/admin/products/${editingId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
     } else {
-      // ➕ CREAR
       await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -115,7 +93,7 @@ export default function AdminProductsPage() {
     loadProducts();
   };
 
-  /* ✏️ CARGAR PARA EDITAR */
+  /* ✏️ EDIT */
   const editProduct = (product: Product) => {
     setForm({
       name: product.name,
@@ -149,7 +127,7 @@ export default function AdminProductsPage() {
         🧑‍💻 Panel Admin - Productos
       </h1>
 
-      {/* BOTÓN */}
+      {/* BOTÓN NUEVO */}
       <button
         onClick={() => {
           resetForm();
@@ -165,7 +143,7 @@ export default function AdminProductsPage() {
         {products.map((p) => (
           <div
             key={p.id}
-            className="flex justify-between items-center bg-white p-4 rounded-xl shadow-soft"
+            className="flex justify-between items-center bg-white p-4 rounded-xl shadow"
           >
             <div className="flex items-center gap-4">
               {p.image ? (
@@ -181,9 +159,7 @@ export default function AdminProductsPage() {
 
               <div>
                 <p className="font-bold">{p.name}</p>
-                <p className="text-sm text-gray-500">
-                  C$ {p.price}
-                </p>
+                <p className="text-sm text-gray-500">C$ {p.price}</p>
                 <p className="text-xs text-gray-400">
                   {p.category?.name}
                 </p>
@@ -191,7 +167,6 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="flex gap-2">
-              {/* ✏️ EDITAR */}
               <button
                 onClick={() => editProduct(p)}
                 className="bg-yellow-400 text-white px-3 py-1 rounded"
@@ -199,7 +174,6 @@ export default function AdminProductsPage() {
                 Editar
               </button>
 
-              {/* ❌ ELIMINAR */}
               <button
                 onClick={() => deleteProduct(p.id)}
                 className="bg-red-500 text-white px-3 py-1 rounded"
@@ -256,16 +230,17 @@ export default function AdminProductsPage() {
                   }
                 />
 
-                {/* IMAGEN */}
-                <input
-                  type="file"
-                  onChange={handleUpload}
+                {/* 🔥 UPLOADTHING */}
+                <ImageUploader
+                  setImageUrl={(url) =>
+                    setForm({ ...form, image: url })
+                  }
                 />
 
                 {form.image && (
                   <img
                     src={form.image}
-                    className="w-24 h-24 object-cover rounded"
+                    className="w-24 h-24 object-cover rounded mt-2"
                   />
                 )}
 
