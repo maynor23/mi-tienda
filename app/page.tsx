@@ -63,9 +63,9 @@ export default function Home() {
 
       {/* 🔥 BANNER */}
       <div className="w-full flex justify-center mt-2 px-4">
-      <div className="w-full max-w-7xl aspect-[6/1] rounded-xl overflow-hidden shadow">
+      <div className="w-full max-w-7xl aspect-[5/1] rounded-xl overflow-hidden shadow">
           <img
-            src="/p5.jpg"
+            src="/banner.png"
             alt="banner"
             className="w-full h-full object-cover"
           />
