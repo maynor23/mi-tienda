@@ -64,14 +64,11 @@ export default function AdminProductsPage() {
 
   /* 💾 SAVE */
   const saveProduct = async () => {
-    console.log("FORM ANTES DE GUARDAR:", form); // 🔥 DEBUG
-
     if (!form.name || !form.price || !form.category_id) {
       alert("Completa los campos");
       return;
     }
 
-    // 🔥 VALIDAR IMAGEN
     if (!form.image) {
       alert("Debes subir una imagen primero");
       return;
@@ -86,8 +83,6 @@ export default function AdminProductsPage() {
         category_id: Number(form.category_id),
       };
 
-      console.log("PAYLOAD ENVIADO:", payload); // 🔥 DEBUG
-
       const url = editingId
         ? `/api/admin/products/${editingId}`
         : "/api/admin/products";
@@ -100,9 +95,7 @@ export default function AdminProductsPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      console.log("RESPUESTA BACKEND:", data); // 🔥 DEBUG
-
+      await res.json();
       resetForm();
       loadProducts();
     } catch (error) {
@@ -118,7 +111,6 @@ export default function AdminProductsPage() {
     await fetch(`/api/admin/products/${id}`, {
       method: "DELETE",
     });
-
     loadProducts();
   };
 
@@ -131,7 +123,6 @@ export default function AdminProductsPage() {
       image: product.image || "",
       category_id: product.category_id.toString(),
     });
-
     setEditingId(product.id);
     setShowModal(true);
   };
@@ -151,10 +142,7 @@ export default function AdminProductsPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-
-      <h1 className="text-2xl font-bold mb-6">
-        🧑‍💻 Panel Admin - Productos
-      </h1>
+      <h1 className="text-2xl font-bold mb-6">🧑‍💻 Panel Admin - Productos</h1>
 
       {/* BOTÓN NUEVO */}
       <button
@@ -185,16 +173,12 @@ export default function AdminProductsPage() {
                   Sin img
                 </div>
               )}
-
               <div>
                 <p className="font-bold">{p.name}</p>
                 <p className="text-sm text-gray-500">C$ {p.price}</p>
-                <p className="text-xs text-gray-400">
-                  {p.category?.name}
-                </p>
+                <p className="text-xs text-gray-400">{p.category?.name}</p>
               </div>
             </div>
-
             <div className="flex gap-2">
               <button
                 onClick={() => editProduct(p)}
@@ -202,7 +186,6 @@ export default function AdminProductsPage() {
               >
                 Editar
               </button>
-
               <button
                 onClick={() => deleteProduct(p.id)}
                 className="bg-red-500 text-white px-3 py-1 rounded"
@@ -221,16 +204,12 @@ export default function AdminProductsPage() {
             onClick={resetForm}
             className="fixed inset-0 bg-black/50 z-40"
           />
-
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
             <div className="bg-white w-full max-w-md rounded-xl p-6">
-
               <h2 className="text-xl font-bold mb-4">
                 {editingId ? "✏️ Editar producto" : "➕ Nuevo producto"}
               </h2>
-
               <div className="space-y-3">
-
                 <input
                   className="border p-2 rounded w-full"
                   placeholder="Nombre"
@@ -239,7 +218,6 @@ export default function AdminProductsPage() {
                     setForm((prev) => ({ ...prev, name: e.target.value }))
                   }
                 />
-
                 <input
                   className="border p-2 rounded w-full"
                   type="number"
@@ -249,7 +227,6 @@ export default function AdminProductsPage() {
                     setForm((prev) => ({ ...prev, price: e.target.value }))
                   }
                 />
-
                 <textarea
                   className="border p-2 rounded w-full"
                   placeholder="Descripción"
@@ -261,17 +238,15 @@ export default function AdminProductsPage() {
                     }))
                   }
                 />
-
                 {/* 🔥 UPLOADTHING */}
                 <ImageUploader
-                  setImageUrl={(url) =>
+                  onUpload={(url) =>
                     setForm((prev) => ({
                       ...prev,
                       image: url,
                     }))
                   }
                 />
-
                 {/* 🔥 PREVIEW */}
                 {form.image && (
                   <img
@@ -279,7 +254,6 @@ export default function AdminProductsPage() {
                     className="w-24 h-24 object-cover rounded mt-2 border"
                   />
                 )}
-
                 <select
                   className="border p-2 rounded w-full"
                   value={form.category_id}
@@ -297,9 +271,7 @@ export default function AdminProductsPage() {
                     </option>
                   ))}
                 </select>
-
               </div>
-
               <div className="mt-5 flex gap-2">
                 <button
                   onClick={resetForm}
@@ -307,7 +279,6 @@ export default function AdminProductsPage() {
                 >
                   Cancelar
                 </button>
-
                 <button
                   onClick={saveProduct}
                   disabled={loading}
@@ -320,12 +291,10 @@ export default function AdminProductsPage() {
                     : "Guardar"}
                 </button>
               </div>
-
             </div>
           </div>
         </>
       )}
-
     </div>
   );
 }

@@ -2,25 +2,12 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 
 const f = createUploadthing();
 
-export const ourFileRouter = {
-  imageUploader: f({
-    image: {
-      maxFileSize: "4MB",
-      maxFileCount: 1, // 🔥 evita múltiples archivos
-    },
-  })
-    .middleware(async () => {
-      // aquí podrías validar usuario en el futuro
-      return {};
-    })
+export const fileRouter = {
+  productImage: f({ image: { maxFileSize: "4MB" } })
     .onUploadComplete(async ({ file }) => {
-      console.log("✅ Uploaded file:", file.url);
-
-      // 🔥 opcional: puedes devolver datos al frontend
-      return {
-        url: file.url,
-      };
+      console.log("Archivo subido:", file.url);
+      // Aquí podrías guardar el URL en tu base de datos
     }),
 } satisfies FileRouter;
 
-export type OurFileRouter = typeof ourFileRouter;
+export type OurFileRouter = typeof fileRouter;
