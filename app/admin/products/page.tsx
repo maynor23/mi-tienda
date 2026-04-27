@@ -64,8 +64,16 @@ export default function AdminProductsPage() {
 
   /* 💾 SAVE */
   const saveProduct = async () => {
+    console.log("FORM ANTES DE GUARDAR:", form); // 🔥 DEBUG
+
     if (!form.name || !form.price || !form.category_id) {
       alert("Completa los campos");
+      return;
+    }
+
+    // 🔥 VALIDAR IMAGEN
+    if (!form.image) {
+      alert("Debes subir una imagen primero");
       return;
     }
 
@@ -78,17 +86,22 @@ export default function AdminProductsPage() {
         category_id: Number(form.category_id),
       };
 
+      console.log("PAYLOAD ENVIADO:", payload); // 🔥 DEBUG
+
       const url = editingId
         ? `/api/admin/products/${editingId}`
         : "/api/admin/products";
 
       const method = editingId ? "PUT" : "POST";
 
-      await fetch(url, {
+      const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      const data = await res.json();
+      console.log("RESPUESTA BACKEND:", data); // 🔥 DEBUG
 
       resetForm();
       loadProducts();
@@ -252,14 +265,18 @@ export default function AdminProductsPage() {
                 {/* 🔥 UPLOADTHING */}
                 <ImageUploader
                   setImageUrl={(url) =>
-                    setForm((prev) => ({ ...prev, image: url }))
+                    setForm((prev) => ({
+                      ...prev,
+                      image: url,
+                    }))
                   }
                 />
 
+                {/* 🔥 PREVIEW */}
                 {form.image && (
                   <img
                     src={form.image}
-                    className="w-24 h-24 object-cover rounded mt-2"
+                    className="w-24 h-24 object-cover rounded mt-2 border"
                   />
                 )}
 
